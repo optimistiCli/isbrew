@@ -1,5 +1,5 @@
 # isbrew
-A script that helps figure out if a file was installed by HomeBrew.
+A script that helps figure out if a file was installed by [HomeBrew](https://brew.sh).
 
 ## Usage
 ```
@@ -8,7 +8,7 @@ isbrew.sh [-h] [-f <path>] [-u] [-1] [-g] [<file>]
 
 ## Examples
 ### Update cache
-Creates a complete list of files installed by HomeBrew. Takes quite a bit of time. Should run before using `isbrew.sh` for the first time and then every time something is installed, updated or removed via HomeBrew.
+Creates a complete list of files installed by [HomeBrew](https://brew.sh). Takes quite a bit of time. Should run before using `isbrew.sh` for the first time and then every time something is installed, updated or removed via [HomeBrew](https://brew.sh).
 ``` bash
 $ isbrew.sh -u
 Updating the HomeBrew files chache file.................................................. done!
