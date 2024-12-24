@@ -3,7 +3,7 @@ A script that helps figure out if a file was installed by [HomeBrew](https://bre
 
 ## Usage
 ```
-isbrew.sh [-h] [-f <path>] [-u] [-1] [-g] [<file>]
+isbrew.sh [-h] [-f <path>] [-u] [-1] [-g] [-l] [-L] [<file>]
 ```
 
 ## Examples
@@ -38,9 +38,13 @@ $ isbrew.sh -g1 dd
 ```
 ### List found files
 ``` bash
-ls -lh $(isbrew.sh -g1 sed)
--rwxr-xr-x  1 ish  admin   184K Nov  6  2022 /opt/homebrew/Cellar/gnu-sed/4.9/bin/gsed
-lrwxr-xr-x  1 ish  admin    14B Nov  6  2022 /opt/homebrew/Cellar/gnu-sed/4.9/libexec/gnubin/sed -> ../../bin/gsed
+$ isbrew.sh -l python
+lrwxr-xr-x  1 user  group    62B Oct  1 04:05 /opt/homebrew/Cellar/python@3.12/3.12.7_1/libexec/bin/python -> ../../Frameworks/Python.framework/Versions/3.12/bin/python3.12
+lrwxr-xr-x  1 user  group    62B Oct  7 07:02 /opt/homebrew/Cellar/python@3.13/3.13.0_1/libexec/bin/python -> ../../Frameworks/Python.framework/Versions/3.13/bin/python3.13
+
+$ isbrew.sh -Lg sed
+-rwxr-xr-x  1 user  group  188336 Nov  6  2022 /opt/homebrew/Cellar/gnu-sed/4.9/bin/gsed
+lrwxr-xr-x  1 user  group      14 Nov  6  2022 /opt/homebrew/Cellar/gnu-sed/4.9/libexec/gnubin/sed -> ../../bin/gsed
 ```
 ### Check if some executables come from Homebrew
 ``` bash
