@@ -8,7 +8,7 @@ function brag_and_exit {
     exit 1
 }
 
-for x in egrep basename sed brew; do
+for x in egrep basename sed stat realpath brew; do
     which -s "$x" || brag_and_exit "Prerequisite '$x' is not on the \$PATH"
 done
 
@@ -16,10 +16,15 @@ CACHE="$HOME/.$(basename "$0" | sed 's/\.sh$//').cache.xz"
 SED_CMD_DEFAULT='s/\t/ (/; s/\t/): /'
 SED_CMD_PATH_ONLY='s/^.*\t//'
 
+STAT='stat -x'
+if ! $STAT $SHELL >/dev/null 2>/dev/null; then
+    STAT='stat'
+fi
+
 function usage {
 cat <<EOU
 Usage:
-  $(basename "$0") [-h] [-f <path>] [-u] [-1] [-g] [-l] [-L] [<file>]
+  $(basename "$0") [-h] [-f <path>] [-u] [-1] [-g] [-l] [-L] [-w] [<file>]
 
 Checks if file is likely to come from NomeBrew
 
@@ -30,12 +35,13 @@ Options:
   -1 Print out just file names, one per line
   -l Run found files through 'ls -lh'
   -L Run found files through 'ls -l'
+  -w Compare file to found files
   -g Search also for g<file>; ex. 'gsed' when looking for 'sed'
 
 EOU
 }
 
-while getopts ":f:hu1glL" OPT ; do
+while getopts ":f:hu1glLw" OPT ; do
     case $OPT in
         h) # Print help and exit
             usage >&2
@@ -48,6 +54,7 @@ while getopts ":f:hu1glL" OPT ; do
 			UPDATE=1
             ;;
         1) # Like ls -1
+            PATH_ONLY=1
 			SED_CMD="$SED_CMD_PATH_ONLY"
             ;;
         g) # Include g<file>
@@ -60,6 +67,10 @@ while getopts ":f:hu1glL" OPT ; do
         L) # ls -l
 			SED_CMD="$SED_CMD_PATH_ONLY"
             WRAPPER=ls_minus_l
+            ;;
+        w) # which
+			SED_CMD="$SED_CMD_PATH_ONLY"
+            WRAPPER=cmp_which
             ;;
     esac
 done
@@ -115,6 +126,31 @@ function ls_minus_lh {
 
 function ls_minus_l {
     ls -l "$@"
+}
+
+function get_inode {
+    $STAT "$1" | sed -En '/^Device:/{s/[[:blank:]]*Links:.*$//;p;q;}'
+}
+
+
+function cmp_which {
+    FILE_PATH="$({ realpath "$FILE" || realpath "$(which "$FILE")"; } 2>/dev/null)"
+    if [ -z "$FILE_PATH" ]; then
+        brag_and_exit "Can not find file '$FILE'"
+    fi
+    for F in "$@"; do
+        if [ "$F" = "$FILE_PATH" ]; then
+            [ -z "$PATH_ONLY" ] && MESSAGE='Exact same path as: '
+        elif [ "$(get_inode "$F")" = "$(get_inode "$FILE_PATH")" ]; then
+            [ -z "$PATH_ONLY" ] && MESSAGE='Exact same file as: '
+        elif cmp -s "$F" "$FILE_PATH"; then
+            [ -z "$PATH_ONLY" ] && MESSAGE='Identical to: '
+        else
+            continue
+        fi
+        echo "${MESSAGE}${F}"
+        unset MESSAGE
+    done
 }
 
 if [ -n "$FILE" ]; then

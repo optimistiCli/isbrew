@@ -3,7 +3,7 @@ A script that helps figure out if a file was installed by [HomeBrew](https://bre
 
 ## Usage
 ```
-isbrew.sh [-h] [-f <path>] [-u] [-1] [-g] [-l] [-L] [<file>]
+isbrew.sh [-h] [-f <path>] [-u] [-1] [-g] [-l] [-L] [-w] [<file>]
 ```
 
 ## Examples
@@ -46,26 +46,32 @@ $ isbrew.sh -Lg sed
 -rwxr-xr-x  1 user  group  188336 Nov  6  2022 /opt/homebrew/Cellar/gnu-sed/4.9/bin/gsed
 lrwxr-xr-x  1 user  group      14 Nov  6  2022 /opt/homebrew/Cellar/gnu-sed/4.9/libexec/gnubin/sed -> ../../bin/gsed
 ```
-### Check if some executables come from Homebrew
+### Check if some file came from Homebrew
 ``` bash
-$ for x in sed python make automake; do
-    for y in $(isbrew.sh -1g "$x"); do
-        cmp -s "$(which "$x")" "$y" \
-        && echo "$x is $y"
-    done
-done
-python is /opt/homebrew/Cellar/python@3.13/3.13.0_1/libexec/bin/python
-automake is /opt/homebrew/Cellar/automake/1.17/bin/automake
+$ isbrew.sh -w python
+Identical to: /opt/homebrew/Cellar/python@3.13/3.13.0_1/libexec/bin/python
+$ isbrew.sh -w cargo
+Exact same path as: /opt/homebrew/Cellar/rust/1.82.0/bin/cargo
+$ isbrew.sh -w sudo
+# No output
+$ ln $(which cargo)
+$ isbrew.sh -w cargo
+Exact same file as: /opt/homebrew/Cellar/rust/1.82.0/bin/cargo
+$ isbrew.sh -w1 python
+/opt/homebrew/Cellar/python@3.13/3.13.0_1/libexec/bin/python
 ```
 ## Options
 * `-h` Print help and exit
 * `-f` Path to HomeBrew files chache file; ~/.isbrew.cache.xz if ommited
 * `-u` Update HomeBrew files chache file; might take a few minutes
 * `-1` Print out just file names, one per line
+* `-l` Run found files through 'ls -lh'
+* `-L` Run found files through 'ls -l'
+* `-w` Compare file to found files
 * `-g` Search also for g\<file\>; ex. 'gsed' when looking for 'sed'
 ## Installation
 Just put the script somewhere on your `$PATH`, for example:
 ``` bash
-sudo install isbrew.sh /usr/local/bin
+sudo install isbrew.sh /usr/local/bin/
 ```
 
